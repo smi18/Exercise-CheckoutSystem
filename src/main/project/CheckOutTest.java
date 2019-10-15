@@ -2,8 +2,9 @@ package main.project;
 
 import static org.junit.Assert.assertEquals;
 
+import java.text.NumberFormat;
 import java.util.ArrayList;
-import java.util.EnumMap;
+import java.util.Locale;
 
 import org.junit.jupiter.api.Test;
 
@@ -11,58 +12,67 @@ class CheckOutTest {
 
 	@Test
 	void testCalculatePriceWithOnlyOneProductInTheListReturnsPriceOfOneProduct() {
-		EnumMap<ProductType, Double> priceMap = new EnumMap<ProductType, Double>(ProductType.class);
-		priceMap.put(ProductType.APPLE, 0.60);
-		priceMap.put(ProductType.ORANGE, 0.25);
+		ArrayList<Product> productList = new ArrayList<Product>();
+		productList.add(new Product(ProductType.APPLE,null,0.60));
+		productList.add(new Product(ProductType.ORANGE,null,0.25));
+		CheckOut checkOut = new CheckOut(productList);
 		
-		CheckOut checkOut = new CheckOut(priceMap);
-		ArrayList<ProductType> list = new ArrayList<ProductType>();
-		list.add(ProductType.APPLE);
-		assertEquals(new Double(checkOut.calculatePrice(list)), new Double(0.60));
+		ArrayList<ProductType> itemsInCartList = new ArrayList<ProductType>();
+		itemsInCartList.add(ProductType.APPLE);
+		
+		NumberFormat currencyFormat = NumberFormat.getCurrencyInstance(Locale.UK);
+		Double price = 0.60;
+		assertEquals(checkOut.calculateTotalPriceOfItemsInCart(itemsInCartList), currencyFormat.format(price));
 	}
 
-	@Test
-	void testCalculatePriceWithDifferentProductsInTheListReturnsTotalPriceOfAllProducts() {
-		EnumMap<ProductType, Double> priceMap = new EnumMap<ProductType, Double>(ProductType.class);
-		priceMap.put(ProductType.APPLE, 0.60);
-		priceMap.put(ProductType.ORANGE, 0.25);
+	@Test 
+	void testCalculatePriceWithB1G1OfferReturnsTotalPriceOfAllProducts()
+	{ 
+		ArrayList<Product> productList = new ArrayList<Product>();
+		productList.add(new Product(ProductType.APPLE,OfferType.B1G1,0.60));
+		productList.add(new Product(ProductType.ORANGE,null,0.25));
+		CheckOut checkOut = new CheckOut(productList);
+	  
+		ArrayList<ProductType> itemsInCartList = new ArrayList<ProductType>();
+		itemsInCartList.add(ProductType.APPLE);
+		itemsInCartList.add(ProductType.APPLE);
+		itemsInCartList.add(ProductType.APPLE); 
+		itemsInCartList.add(ProductType.ORANGE);
+		NumberFormat currencyFormat = NumberFormat.getCurrencyInstance(Locale.UK);
+		Double price = (0.60*2)+0.25;
+		assertEquals(checkOut.calculateTotalPriceOfItemsInCart(itemsInCartList), currencyFormat.format(price));
+	  }
+	  
+	@Test 
+	void testCalculatePriceWithNullProductInTheListReturnsTotalPriceOfAllProducts() 
+	{
+		ArrayList<Product> productList = new ArrayList<Product>();
+		productList.add(new Product(ProductType.APPLE,OfferType.B2G1,0.60));
+		productList.add(new Product(ProductType.ORANGE,OfferType.NONE,0.25));
+		CheckOut checkOut = new CheckOut(productList);
 		
-		CheckOut checkOut = new CheckOut(priceMap);
-		ArrayList<ProductType> list = new ArrayList<ProductType>();
-		list.add(ProductType.APPLE);
-		list.add(ProductType.APPLE);
-		list.add(ProductType.APPLE);
-		list.add(ProductType.APPLE);
-		list.add(ProductType.ORANGE);
-		assertEquals(new Double(checkOut.calculatePrice(list)), new Double(0.60*4+0.25));
+		ArrayList<ProductType> itemsInCartList = new ArrayList<ProductType>();
+		itemsInCartList.add(ProductType.APPLE);
+		itemsInCartList.add(ProductType.APPLE);
+		itemsInCartList.add(ProductType.APPLE); 
+		itemsInCartList.add(null);
+		NumberFormat currencyFormat = NumberFormat.getCurrencyInstance(Locale.UK);
+		Double price = 0.60*2;
+		assertEquals(checkOut.calculateTotalPriceOfItemsInCart(itemsInCartList),currencyFormat.format(price));	
 	}
 	
-	@Test
-	void testCalculatePriceWithNullProductInTheListReturnsTotalPriceOfAllProducts() {
-		EnumMap<ProductType, Double> priceMap = new EnumMap<ProductType, Double>(ProductType.class);
-		priceMap.put(ProductType.APPLE, 0.60);
-		priceMap.put(ProductType.ORANGE, 0.25);
-		
-		CheckOut checkOut = new CheckOut(priceMap);
-		ArrayList<ProductType> list = new ArrayList<ProductType>();
-		list.add(ProductType.APPLE);
-		list.add(ProductType.APPLE);
-		list.add(ProductType.APPLE);
-		list.add(ProductType.APPLE);
-		list.add(ProductType.ORANGE);
-		list.add(null);
-		assertEquals(new Double(checkOut.calculatePrice(list)), new Double(0.60*4+0.25));
-	}
-	
-	@Test
-	void testCalculatePriceWithOnlyNullInTheList() {
-		EnumMap<ProductType, Double> priceMap = new EnumMap<ProductType, Double>(ProductType.class);
-		priceMap.put(ProductType.APPLE, 0.60);
-		priceMap.put(ProductType.ORANGE, 0.25);
-		
-		CheckOut checkOut = new CheckOut(priceMap);
-		ArrayList<ProductType> list = new ArrayList<ProductType>();
-		list.add(null);
-		assertEquals(new Double(checkOut.calculatePrice(list)), new Double(0));
-	}
+	 @Test void testCalculatePriceWithOnlyNullInTheList() 
+	 { 
+		 ArrayList<Product> productList = new ArrayList<Product>();
+		 productList.add(new Product(ProductType.APPLE,OfferType.B1G1,0.60));
+		 productList.add(new Product(ProductType.ORANGE,OfferType.B1G1,0.25));
+		 CheckOut checkOut = new CheckOut(productList);
+			
+		 ArrayList<ProductType> itemsInCartList = new ArrayList<ProductType>();
+		 itemsInCartList.add(null);
+		 itemsInCartList.add(null);
+		 itemsInCartList.add(null);
+		 NumberFormat currencyFormat = NumberFormat.getCurrencyInstance(Locale.UK);
+		 assertEquals(checkOut.calculateTotalPriceOfItemsInCart(itemsInCartList), currencyFormat.format(0));
+	 } 
 }
